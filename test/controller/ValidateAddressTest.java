@@ -1,28 +1,31 @@
 package controller;
 
+import controller.impl.ShippingFeeCalculatorImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+/**
+ * @author HungND - 20183548
+ */
 public class ValidateAddressTest {
+
     private PlaceOrderController placeOrderController;
+
     @BeforeEach
-    void setUp() {
-        placeOrderController = new PlaceOrderController();
+    void setUp() throws Exception {
+        placeOrderController = new PlaceOrderController(new ShippingFeeCalculatorImpl());
     }
+
     @ParameterizedTest
     @CsvSource({
-            "'thon 7, Xuan Quan, Van Giang, Hung Yen' ,true",
-            "2k19 - ngo 55 Nguyen An Ninh, true",
-            "*,false",
-            ", false"
+            "&Ha Noi,false",
+            "Ha%Noi,false,",
+            "Ha Noi,true"
     })
-    void validateAddress(String address, boolean expected){
-        //when
-        boolean actual = placeOrderController.validateAddress(address);
-        //then
-        assertEquals(expected, actual);
+    void test(String address, boolean expected) {
+        boolean isValid = placeOrderController.validateAddress(address);
+        Assertions.assertEquals(isValid, expected);
     }
 }

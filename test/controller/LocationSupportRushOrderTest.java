@@ -1,6 +1,6 @@
 package controller;
 
-import controller.impl.ShippingFeeCalculatorImpl;
+import controller.impl.SimpleRushOrderValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,25 +9,24 @@ import org.junit.jupiter.params.provider.CsvSource;
 /**
  * @author HungND - 20183548
  */
-public class ValidateNameTest {
+public class LocationSupportRushOrderTest {
 
-    private PlaceOrderController placeOrderController;
+    private PlaceRushOrderController placeRushOrderController;
 
     @BeforeEach
     void setUp() throws Exception {
-        placeOrderController = new PlaceOrderController(new ShippingFeeCalculatorImpl());
+        placeRushOrderController = new PlaceRushOrderController(new SimpleRushOrderValidator());
     }
 
     @ParameterizedTest
     @CsvSource({
-            "Hoang,true",
-            "Viet Manh,false",
-            "%Hoa,false",
+            "Hà Nội,true",
+            "Hồ Chí Minh,false",
             "H62a,false",
             "H()a,false"
     })
-    void test(String name, boolean expected) {
-        boolean isValid = placeOrderController.validateName(name);
+    void test(String province, boolean expected) {
+        boolean isValid = placeRushOrderController.isLocationSupportRushOrder(province);
         Assertions.assertEquals(isValid, expected);
     }
 }

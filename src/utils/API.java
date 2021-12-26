@@ -1,6 +1,11 @@
 package utils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
@@ -12,10 +17,13 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import entity.payment.CreditCard;
+import entity.payment.PaymentTransaction;
+
 /**
  * Class cung cap cac phuong thuc gui request len server va nhan du lieu tra ve
  * Date: 07/12/2021
- * @author Nguyen Duy Long 20183584
+ * @author nguyenlm
  * @version 1.0
  */
 public class API {
@@ -23,7 +31,7 @@ public class API {
 	/**
 	 * Thuoc tinh nay giup format ngay thang nam theo dinh dang
 	 */
-	public static DateFormat DATE_FORMATER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	public static DateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 	/**
 	 * Thuoc tinh nay giup log ra thong tin o console
@@ -39,7 +47,7 @@ public class API {
 	 */
 	public static String get(String url, String token) throws Exception {
 		// Setup
-		HttpURLConnection conn = setUpConnection(url, "GET", token);
+		HttpURLConnection conn = getHttpURLConnection(url, "GET", token);
 		// Doc du lieu cua server tra ve
 		return readResponse(conn);
 	}
@@ -53,13 +61,11 @@ public class API {
 	private static String readResponse(HttpURLConnection conn) throws IOException {
 		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 		String inputLine;
-		StringBuilder response = new StringBuilder();
-		while ((inputLine = in.readLine()) != null)
-			System.out.println(inputLine);
-		response.append(null + "\n");
-		in.close();
-		LOGGER.info("Respone Info: " + response.substring(0, response.length() - 1).toString());
-		return response.substring(0, response.length() - 1).toString();
+		StringBuilder response = new StringBuilder(); // using StringBuilder for the sake of memory and performance
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		return response.toString();
 	}
 
 	/**
@@ -70,8 +76,7 @@ public class API {
 	 * @return HttpURLConnection toi server
 	 * @throws IOException
 	 */
-	private static HttpURLConnection setUpConnection(String url, String method, String token) throws IOException {
-		// Nguyen Duy Long 20183584
+	private static HttpURLConnection getHttpURLConnection(String url, String method, String token) throws IOException {
 		LOGGER.info("Request URL: " + url + "\n");
 		URL line_api_url = new URL(url);
 		HttpURLConnection conn = (HttpURLConnection) line_api_url.openConnection();
@@ -93,7 +98,7 @@ public class API {
 	public static String post(String url, String data, String token) throws IOException {
 		allowMethods("PATCH");
 		// setup
-		HttpURLConnection conn = setUpConnection(url, "PATCH", token);
+		HttpURLConnection conn = getHttpURLConnection(url, "PATCH", token);
 
 		// gui du lieu
 		String payload = data;

@@ -1,16 +1,15 @@
 package controller;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.logging.Logger;
+
 import entity.cart.Cart;
 import entity.cart.CartMedia;
 import entity.invoice.Invoice;
 import entity.order.Order;
 import entity.order.OrderMedia;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.logging.Logger;
 
 /**
  * This class controls the flow of place order usecase in our AIMS project
@@ -19,12 +18,28 @@ import java.util.logging.Logger;
 public class PlaceOrderController extends BaseController{
 
     /**
+     * For reduce hard code
+     */
+    public static final String ADDRESS = "address";
+    public static final String PHONE_NUMBER = "phone";
+    public static final String NAME = "name";
+
+    private ShippingFeeCalculator calculateShippingFee;
+
+    public PlaceOrderController() {
+    }
+
+    public PlaceOrderController(ShippingFeeCalculator calculateShippingFee) {
+        this.calculateShippingFee = calculateShippingFee;
+    }
+
+    /**
      * Just for logging purpose
      */
     private static Logger LOGGER = utils.Utils.getLogger(PlaceOrderController.class.getName());
 
     /**
-     * This method checks the avalibility of product when user click PlaceOrder button
+     * This method checks the availability of product when user click PlaceOrder button
      * @throws SQLException
      */
     public void placeOrder() throws SQLException{
@@ -75,42 +90,49 @@ public class PlaceOrderController extends BaseController{
    * @throws InterruptedException
    * @throws IOException
    */
-    public void validateDeliveryInfo(HashMap<String, String> info) throws InterruptedException, IOException{
-
+    public boolean validateDeliveryInfo(HashMap<String, String> info) throws InterruptedException, IOException{
+        String address = info.get(ADDRESS);
+        String name = info.get(NAME);
+        String phoneNumber = info.get(PHONE_NUMBER);
+        return validateAddress(address) && validateName(name) && validatePhoneNumber(phoneNumber);
     }
-    
+
+    /**
+     * The method validates the phone number of user
+     * @param phoneNumber
+     */
     public boolean validatePhoneNumber(String phoneNumber) {
-        //Nguyen Duy Long 20183584
-
-        //check phone number has 10 digits
-        if(phoneNumber.length() != 10) return false;
-
-        //check phone number start with 0
-        if(!phoneNumber.startsWith("0")) return false;
-
-        //check phone number contain only numbers
-        try{
-            Integer.parseInt(phoneNumber);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
+    	if (!phoneNumber.startsWith("0"))
+			return false;
+		if (phoneNumber.length() != 10)
+			return false;
+		if (!phoneNumber.matches("[0-9]+"))
+			return false;
+		return true;
     }
-    
+
+    /**
+     * The method validates name of user
+     * @param name User's name
+     */
     public boolean validateName(String name) {
-        //Nguyen Duy Long 20183584
-        if(name == null || name.isEmpty() ){
-            return false;
-        }
-        return name.matches("^[a-zA-Z\\s]*$");
+    	if (name == null)
+			return false;
+		if (name.matches("^[ A-Za-z]+$"))
+			return true;
+		return false;
     }
-    
+
+    /**
+     * The method validates user's address
+     * @param address
+     */
     public boolean validateAddress(String address) {
-        //Nguyen Duy Long 20183584
-        if(address == null || address.isEmpty()) {
-            return false;
-        }
-        return address.matches("^[#.0-9a-zA-Z\\s,-]+$");
+    	if (address == null)
+			return false;
+		if (address.matches("[A-Za-z0-9 ]+"))
+			return true;
+		return false;
     }
     
 
@@ -120,9 +142,6 @@ public class PlaceOrderController extends BaseController{
      * @return shippingFee
      */
     public int calculateShippingFee(Order order){
-        Random rand = new Random();
-        int fees = (int)( ( (rand.nextFloat()*10)/100 ) * order.getAmount() );
-        LOGGER.info("Order Amount: " + order.getAmount() + " -- Shipping Fees: " + fees);
-        return fees;
+        return calculateShippingFee.calculateShippingFee(order);
     }
 }
